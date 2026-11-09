@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>혜원쌤 TMI 퀴즈! 얼마나 잘 알고 있니?</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            deepGreen: '#1B4332',
+                            forest: '#2D6A4F',
+                            emerald: '#40916C',
+                            mint: '#52B788',
+                            lightMint: '#74C69D',
+                            paleGreen: '#D8F3DC',
+                            sage: '#E8F5E9',
+                            softDark: '#1E293B',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Pretendard', 'Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti for victory effect -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #EBF2EE;
+            background-image: radial-gradient(#C2E0D1 1.2px, transparent 1.2px);
+            background-size: 24px 24px;
+        }
+
+        .bounce-gentle {
+            animation: bounceGentle 2.5s infinite ease-in-out;
+        }
+
+        @keyframes bounceGentle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .shake {
+            animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        .pop-in {
+            animation: popIn 0.3s ease-out;
+        }
+
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.96); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 text-brand-softDark">
+
+    <!-- Main Container Card -->
+    <div class="w-full max-w-md bg-white rounded-3xl shadow-xl border-2 border-brand-mint/30 overflow-hidden flex flex-col relative min-h-[580px]">
+
+        <!-- Decorative Header Bar -->
+        <div class="bg-brand-deepGreen px-5 py-3.5 flex justify-between items-center text-white">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-seedling text-brand-mint text-sm"></i>
+                <span class="text-xs font-bold tracking-wide text-brand-paleGreen">혜원쌤 탐구 영역</span>
+            </div>
+            <div class="text-[11px] font-bold text-white bg-brand-forest px-3 py-1 rounded-full flex items-center gap-1.5 border border-brand-mint/30">
+                <span>12문항 테스트</span>
+            </div>
+        </div>
+
+        <!-- APP CONTENT AREA -->
+        <div class="p-6 flex-1 flex flex-col justify-center">
+
+            <!-- 1. START SCREEN (No Spoilers, No Animal Graphics) -->
+            <div id="screen-start" class="flex flex-col items-center text-center space-y-6 pop-in">
+                <!-- Clean Badge Graphic -->
+                <div class="w-24 h-24 rounded-full bg-brand-paleGreen border-2 border-brand-mint flex items-center justify-center text-brand-deepGreen text-3xl shadow-inner bounce-gentle">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+
+                <div class="space-y-2">
+                    <span class="bg-brand-sage text-brand-deepGreen text-xs font-bold px-3.5 py-1 rounded-full border border-brand-paleGreen">
+                        나는 혜원쌤에 대해 얼마나 알까?
+                    </span>
+                    <h1 class="text-2xl sm:text-3xl font-black text-brand-deepGreen leading-tight pt-1">
+                        혜원쌤 TMI 탐구 퀴즈
+                    </h1>
+                    <p class="text-xs sm:text-sm text-slate-600 max-w-xs mx-auto leading-relaxed pt-1">
+                        혜원쌤의 소소한 취향부터 매력 포인트까지!<br>
+                        과연 몇 문제나 맞출 수 있을까요?
+                    </p>
+                </div>
+
+                <!-- Input area for personalized test -->
+                <div class="w-full max-w-xs space-y-3 pt-2">
+                    <input type="text" id="user-name" placeholder="도전자 이름을 입력하세요" class="w-full text-center px-4 py-3 text-sm rounded-xl border-2 border-brand-paleGreen focus:border-brand-mint focus:outline-none transition-colors bg-brand-sage/40 font-bold placeholder:font-normal placeholder:text-slate-400">
+                    <button id="btn-start" class="w-full py-3.5 bg-brand-deepGreen hover:bg-brand-forest text-brand-paleGreen font-extrabold text-base rounded-xl shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 border border-brand-mint/40">
+                        <span>퀴즈 풀기 시작</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 2. QUIZ SCREEN -->
+            <div id="screen-quiz" class="hidden flex-col h-full justify-between">
+                <!-- Top Status Bar -->
+                <div>
+                    <div class="flex justify-between items-center mb-2 text-xs font-bold text-slate-600">
+                        <span id="quiz-progress-text" class="text-brand-deepGreen flex items-center gap-1">
+                            <i class="fa-solid fa-bookmark text-brand-mint"></i>
+                            <span>QUESTION 1 / 12</span>
+                        </span>
+                        <span id="quiz-score-live" class="bg-brand-paleGreen text-brand-deepGreen px-3 py-1 rounded-full font-bold border border-brand-mint/50">0점</span>
+                    </div>
+                    <!-- Progress Bar Container -->
+                    <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden p-0.5 border border-slate-200">
+                        <div id="progress-bar" class="bg-brand-forest h-full rounded-full transition-all duration-300 w-0"></div>
+                    </div>
+                </div>
+
+                <!-- Question Box -->
+                <div class="my-4 py-5 px-5 bg-brand-sage border border-brand-paleGreen rounded-2xl text-center relative pop-in shadow-sm">
+                    <span id="question-category" class="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-deepGreen text-brand-paleGreen text-[10px] font-bold px-3 py-0.5 rounded-full tracking-wider shadow-sm">
+                        카테고리
+                    </span>
+                    <h2 id="question-text" class="text-base sm:text-lg font-bold text-slate-800 pt-1 leading-snug">
+                        질문 텍스트가 여기에 나옵니다.
+                    </h2>
+                </div>
+
+                <!-- Multiple Choices -->
+                <div id="options-container" class="space-y-2.5 my-2">
+                    <!-- Dynamic option buttons rendered via JS -->
+                </div>
+
+                <!-- Explanation / Feedback Banner -->
+                <div id="feedback-box" class="hidden p-4 rounded-2xl border transition-all duration-200 pop-in mt-2 text-center">
+                    <div id="feedback-title" class="font-bold text-base mb-1 flex items-center justify-center gap-2"></div>
+                    <div id="feedback-desc" class="text-xs text-slate-600 leading-relaxed"></div>
+                    <button id="btn-next" class="mt-3 w-full py-2.5 bg-brand-deepGreen hover:bg-brand-forest text-white font-bold text-sm rounded-xl transition-all shadow">
+                        다음 문제 <i class="fa-solid fa-arrow-right text-xs ml-1"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. RESULT SCREEN -->
+            <div id="screen-result" class="hidden flex-col items-center text-center space-y-5 pop-in">
+                <!-- Result Icon / Badge -->
+                <div class="relative">
+                    <div id="result-icon-bg" class="w-20 h-20 rounded-full bg-brand-paleGreen border-2 border-brand-mint flex items-center justify-center text-brand-deepGreen text-3xl shadow-md">
+                        <i class="fa-solid fa-award"></i>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 id="result-user-name" class="text-xs font-bold text-brand-emerald tracking-wide">도전자님의 성적표</h2>
+                    <h3 id="result-title" class="text-2xl font-black text-brand-deepGreen mt-0.5">
+                        혜원쌤의 최애 제자!
+                    </h3>
+                    <div class="mt-3 inline-flex items-baseline gap-1 bg-brand-sage px-5 py-2 rounded-2xl border border-brand-paleGreen">
+                        <span class="text-xs text-slate-600 font-bold">최종 점수:</span>
+                        <span id="result-score" class="text-3xl font-black text-brand-deepGreen">100</span>
+                        <span class="text-xs font-bold text-slate-500">/ 100점</span>
+                    </div>
+                </div>
+
+                <!-- Evaluation Text -->
+                <p id="result-eval" class="text-xs sm:text-sm text-slate-700 px-3 leading-relaxed bg-brand-sage p-3.5 rounded-2xl border border-brand-paleGreen max-w-sm">
+                    평가 설명 텍스트가 표시됩니다.
+                </p>
+
+                <!-- Action Buttons -->
+                <div class="w-full space-y-2 pt-1">
+                    <button id="btn-retry" class="w-full py-3.5 bg-brand-deepGreen hover:bg-brand-forest text-brand-paleGreen font-bold text-base rounded-xl shadow-md transition-all flex items-center justify-center gap-2 border border-brand-mint/40">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span>다시 도전하기</span>
+                    </button>
+                    <button id="btn-review" class="w-full py-3 bg-white hover:bg-brand-sage text-brand-deepGreen font-bold text-sm rounded-xl transition-all border border-brand-paleGreen flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-list-check text-brand-emerald"></i>
+                        <span>정답 & TMI 해설 다시보기</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 4. REVIEW MODAL/SCREEN -->
+            <div id="screen-review" class="hidden flex-col h-full">
+                <div class="flex justify-between items-center pb-3 border-b border-brand-paleGreen mb-3">
+                    <h3 class="font-bold text-brand-deepGreen flex items-center gap-2 text-base">
+                        <i class="fa-solid fa-book-open text-brand-emerald"></i>
+                        <span>혜원쌤 TMI 해설 노트</span>
+                    </h3>
+                    <button id="btn-close-review" class="text-slate-400 hover:text-slate-600 p-1">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+                
+                <div id="review-list" class="flex-1 overflow-y-auto space-y-3 pr-1 max-h-[370px]">
+                    <!-- Review items generated dynamically -->
+                </div>
+
+                <button id="btn-back-result" class="mt-4 w-full py-3 bg-brand-deepGreen text-white font-bold text-sm rounded-xl hover:bg-brand-forest transition-colors">
+                    결과 화면으로 돌아가기
+                </button>
+            </div>
+
+        </div>
+
+        <!-- Clean Footer -->
+        <div class="bg-brand-sage px-4 py-2.5 border-t border-brand-paleGreen text-center text-[11px] text-brand-forest font-medium">
+            <span>혜원쌤 탐구 퀴즈 • 즐겁게 맞춰보세요!</span>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Quiz Questions Data (12 Questions)
+        const quizData = [
+            {
+                category: "담당 과목",
+                question: "혜원쌤이 가르치시는 담당 과목은 무엇일까요?",
+                options: ["수학", "영어", "국어", "미술"],
+                answer: 1,
+                explanation: "혜원쌤은 영어 과목을 담당하고 계십니다!"
+            },
+            {
+                category: "담임 학급",
+                question: "올해 혜원쌤이 담임을 맡으신 학급은 몇 반일까요?",
+                options: ["2학년 3반", "2학년 7반", "2학년 10반", "3학년 10반"],
+                answer: 2,
+                explanation: "혜원쌤은 올해 2학년 10반 담임선생님이십니다!"
+            },
+            {
+                category: "담당 동아리",
+                question: "혜원쌤이 담당하고 계신 동아리 이름은 무엇일까요?",
+                options: ["Jasmine (자스민)", "Rose (로즈)", "Sunflower (해바라기)", "Mint (민트)"],
+                answer: 0,
+                explanation: "혜원쌤이 맡으신 동아리는 'Jasmine'입니다!"
+            },
+            {
+                category: "헤어 스타일",
+                question: "혜원쌤의 대표적인 헤어스타일은?",
+                options: ["긴 생머리", "웨이브 펌", "단발머리", "포니테일"],
+                answer: 2,
+                explanation: "혜원쌤은 단발머리 스타일이십니다!"
+            },
+            {
+                category: "책 취향",
+                question: "혜원쌤이 가장 좋아하시는 책의 색상은?",
+                options: ["파란색 책", "초록색 책", "노란색 책", "분홍색 책"],
+                answer: 1,
+                explanation: "혜원쌤이 가장 좋아하시는 책 표지 색상은 초록색입니다!"
+            },
+            {
+                category: "캐릭터 취향 반전 ⭐️",
+                question: "혜원쌤은 스누피 캐릭터를 좋아하시지만, 사실 스누피보다 '더' 좋아하시는 캐릭터는?",
+                options: ["찰리 브라운", "우드스탁", "루시", "라이너스"],
+                answer: 1,
+                explanation: "혜원쌤은 스누피보다 우드스탁을 더 좋아하신다고 합니다!"
+            },
+            {
+                category: "취미 생활",
+                question: "혜원쌤이 정말 좋아하셔서 자주 하러 다니시는 취미 활동은?",
+                options: ["그림(전시) 보러 다니기", "뮤지컬 관람", "캠핑 가기", "등산하기"],
+                answer: 0,
+                explanation: "혜원쌤은 그림 보는 것을 정말 좋아하셔서 자주 전시를 보러 다니십니다!"
+            },
+            {
+                category: "담당 업무",
+                question: "혜원쌤이 담당하고 계신 학교 행정 업무는?",
+                options: ["체육대회 담당", "동아리 봉사활동 관련 업무", "급식 관리 업무", "도서관 운영 업무"],
+                answer: 1,
+                explanation: "혜원쌤은 동아리 봉사활동 관련 업무를 담당하고 계십니다!"
+            },
+            {
+                category: "성격 유형 (MBTI)",
+                question: "혜원쌤의 성격적 특징에 대한 설명으로 올바른 것은?",
+                options: ["감성 충만하고 감정 이입을 잘함", "극T여서 감정적 공감은 잘 못함", "매우 즉흥적인 스타일", "남의 눈치를 매우 많이 봄"],
+                answer: 1,
+                explanation: "혜원쌤은 극T 성향이셔서 공감은 잘 못해주시지만, 직설적이고 솔직한 매력이 있으십니다!"
+            },
+            {
+                category: "기억력 TMI",
+                question: "혜원쌤의 기억력과 관련된 반전 특징은?",
+                options: ["한 번 본 것은 절대 안 잊음", "기억력이 안 좋으셔서 좋은 일이든 나쁜 일이든 잘 잊으심", "학생들 이름을 하루 만에 다 외움", "숫자 기억력이 매우 뛰어남"],
+                answer: 1,
+                explanation: "기억력이 안 좋으셔서 좋은 일이나 나쁜 일이나 잘 잊어버리는 쿨한 편이십니다!"
+            },
+            {
+                category: "신체 특징",
+                question: "혜원쌤의 키는 어느 정도 될까요?",
+                options: ["150cm 초반", "150cm 후반", "160cm 중반", "170cm 이상"],
+                answer: 2,
+                explanation: "혜원쌤의 키는 160cm 중반 정도 되십니다!"
+            },
+            {
+                category: "패션 시그니처 ⌚",
+                question: "혜원쌤이 다른 건 안 하셔도 '무조건' 착용하시는 아이템은?",
+                options: ["다양한 종류의 시계", "화려한 귀걸이", "다채로운 모자", "스카프"],
+                answer: 0,
+                explanation: "혜원쌤은 시계에 정말 진심이셔서 엄청 다양한 시계를 보유하고 계시며, 무조건 시계를 착용하십니다!"
+            }
+        ];
+
+        // State variables
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let userAnswers = [];
+        let userName = "";
+
+        // DOM Elements
+        const screenStart = document.getElementById('screen-start');
+        const screenQuiz = document.getElementById('screen-quiz');
+        const screenResult = document.getElementById('screen-result');
+        const screenReview = document.getElementById('screen-review');
+
+        const btnStart = document.getElementById('btn-start');
+        const btnNext = document.getElementById('btn-next');
+        const btnRetry = document.getElementById('btn-retry');
+        const btnReview = document.getElementById('btn-review');
+        const btnCloseReview = document.getElementById('btn-close-review');
+        const btnBackResult = document.getElementById('btn-back-result');
+
+        const quizProgressText = document.getElementById('quiz-progress-text');
+        const quizScoreLive = document.getElementById('quiz-score-live');
+        const progressBar = document.getElementById('progress-bar');
+        const questionCategory = document.getElementById('question-category');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+
+        const feedbackBox = document.getElementById('feedback-box');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const feedbackDesc = document.getElementById('feedback-desc');
+
+        // Event Listeners
+        btnStart.addEventListener('click', startQuiz);
+        btnNext.addEventListener('click', nextQuestion);
+        btnRetry.addEventListener('click', startQuiz);
+        btnReview.addEventListener('click', showReview);
+        btnCloseReview.addEventListener('click', hideReview);
+        btnBackResult.addEventListener('click', hideReview);
+
+        // Start Quiz Function
+        function startQuiz() {
+            const nameInput = document.getElementById('user-name');
+            userName = nameInput.value.trim() || "도전자";
+
+            currentQuestionIndex = 0;
+            score = 0;
+            userAnswers = [];
+
+            screenStart.classList.add('hidden');
+            screenResult.classList.add('hidden');
+            screenReview.classList.add('hidden');
+            screenQuiz.classList.remove('hidden');
+            screenQuiz.classList.add('flex');
+
+            loadQuestion();
+        }
+
+        // Load Question Data
+        function loadQuestion() {
+            feedbackBox.classList.add('hidden');
+            
+            const q = quizData[currentQuestionIndex];
+            const total = quizData.length;
+            const progressPercent = ((currentQuestionIndex) / total) * 100;
+            
+            progressBar.style.width = `${progressPercent}%`;
+            quizProgressText.innerHTML = `<i class="fa-solid fa-bookmark text-brand-mint"></i> QUESTION ${currentQuestionIndex + 1} / ${total}`;
+            quizScoreLive.textContent = `${score}점`;
+
+            questionCategory.textContent = q.category;
+            questionText.textContent = q.question;
+
+            optionsContainer.innerHTML = '';
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left p-3.5 px-4 rounded-xl border border-brand-paleGreen bg-white hover:border-brand-mint hover:bg-brand-sage font-semibold text-sm text-slate-700 transition-all flex items-center justify-between group cursor-pointer`;
+                btn.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="w-6 h-6 rounded-full bg-brand-sage text-brand-deepGreen text-xs font-bold flex items-center justify-center group-hover:bg-brand-deepGreen group-hover:text-brand-paleGreen transition-colors">
+                            ${idx + 1}
+                        </span>
+                        <span>${opt}</span>
+                    </div>
+                    <i class="fa-regular fa-circle text-slate-300 group-hover:text-brand-mint"></i>
+                `;
+                btn.addEventListener('click', () => selectOption(idx, btn));
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        // Option Selection Handler
+        function selectOption(selectedIndex, selectedBtn) {
+            const q = quizData[currentQuestionIndex];
+            const isCorrect = selectedIndex === q.answer;
+            
+            userAnswers.push({
+                question: q.question,
+                selected: selectedIndex,
+                correct: q.answer,
+                isCorrect: isCorrect,
+                explanation: q.explanation
+            });
+
+            const buttons = optionsContainer.querySelectorAll('button');
+            buttons.forEach(btn => btn.disabled = true);
+
+            if (isCorrect) {
+                score += Math.round(100 / quizData.length);
+                selectedBtn.classList.remove('border-brand-paleGreen', 'bg-white');
+                selectedBtn.classList.add('border-brand-mint', 'bg-brand-paleGreen', 'text-brand-deepGreen');
+                selectedBtn.querySelector('.fa-circle').className = 'fa-solid fa-circle-check text-brand-forest text-lg';
+
+                feedbackBox.className = 'p-4 rounded-2xl border border-brand-mint bg-brand-sage text-center pop-in mt-2';
+                feedbackTitle.className = 'font-bold text-brand-deepGreen text-base mb-1 flex items-center justify-center gap-1.5';
+                feedbackTitle.innerHTML = `<i class="fa-solid fa-circle-check text-brand-emerald"></i> 정답입니다!`;
+            } else {
+                selectedBtn.classList.remove('border-brand-paleGreen', 'bg-white');
+                selectedBtn.classList.add('border-rose-300', 'bg-rose-50', 'text-rose-900', 'shake');
+                selectedBtn.querySelector('.fa-circle').className = 'fa-solid fa-circle-xmark text-rose-500 text-lg';
+
+                const correctBtn = buttons[q.answer];
+                correctBtn.classList.remove('border-brand-paleGreen');
+                correctBtn.classList.add('border-brand-mint', 'bg-brand-paleGreen/70');
+
+                feedbackBox.className = 'p-4 rounded-2xl border border-rose-200 bg-rose-50/70 text-center pop-in mt-2';
+                feedbackTitle.className = 'font-bold text-rose-700 text-base mb-1 flex items-center justify-center gap-1.5';
+                feedbackTitle.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-500"></i> 아쉽게도 오답입니다.`;
+            }
+
+            feedbackDesc.textContent = q.explanation;
+            feedbackBox.classList.remove('hidden');
+
+            quizScoreLive.textContent = `${score}점`;
+        }
+
+        // Next Question or Complete Quiz
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        // Show Final Result
+        function showResult() {
+            screenQuiz.classList.add('hidden');
+            screenQuiz.classList.remove('flex');
+            screenResult.classList.remove('hidden');
+            screenResult.classList.add('flex');
+
+            if (score > 100 || (currentQuestionIndex === quizData.length && score >= 96)) {
+                score = 100;
+            }
+
+            document.getElementById('result-user-name').textContent = `${userName}님의 혜원쌤 탐구 성적표`;
+            document.getElementById('result-score').textContent = score;
+
+            const iconBg = document.getElementById('result-icon-bg');
+            const title = document.getElementById('result-title');
+            const evalText = document.getElementById('result-eval');
+
+            if (score >= 90) {
+                iconBg.innerHTML = '<i class="fa-solid fa-crown text-amber-500"></i>';
+                title.textContent = "혜원쌤 박사 등극!";
+                evalText.innerHTML = `대단합니다! ${userName}님은 혜원쌤의 단발머리 스타일, 좋아하는 초록책, 시계 컬렉션, 우드스탁 취향까지 완벽하게 파악하고 계시네요! 혜원쌤이 극T이셔도 겉으로는 티 안 내지만 내심 기뻐하실 겁니다! ✨`;
+                
+                if (typeof confetti === 'function') {
+                    confetti({
+                        particleCount: 80,
+                        spread: 60,
+                        origin: { y: 0.6 }
+                    });
+                }
+            } else if (score >= 70) {
+                iconBg.innerHTML = '<i class="fa-solid fa-award text-brand-emerald"></i>';
+                title.textContent = "혜원쌤 친분 보유자!";
+                evalText.innerHTML = `${userName}님은 혜원쌤에 대해 상당히 많은 것을 알고 계시네요! 전시회나 예쁜 시계에 대해 혜원쌤과 대화를 나누다 보면 점수가 더 올라갈 거예요!`;
+            } else if (score >= 40) {
+                iconBg.innerHTML = '<i class="fa-solid fa-seedling text-brand-mint"></i>';
+                title.textContent = "혜원쌤과 친해지는 중!";
+                evalText.innerHTML = `아직 혜원쌤에 대해 알아갈 게 많네요! 괜찮습니다, 혜원쌤은 기억력이 별로 안 좋으셔서 나쁜 기억도, 이번 퀴즈 점수도 금방 잊으실 테니까요! 🤫`;
+            } else {
+                iconBg.innerHTML = '<i class="fa-solid fa-magnifying-glass text-slate-400"></i>';
+                title.textContent = "혜원쌤 탐구 시작 단계!";
+                evalText.innerHTML = `혜원쌤의 TMI에 대해 아직은 조금 낯설군요! 정답 노트를 살펴보고 혜원쌤의 다양한 시계와 단발머리, 2-10반 정보 등을 확인해 보세요!`;
+            }
+        }
+
+        // Show Review Note Modal
+        function showReview() {
+            screenResult.classList.add('hidden');
+            screenReview.classList.remove('hidden');
+            screenReview.classList.add('flex');
+
+            const reviewList = document.getElementById('review-list');
+            reviewList.innerHTML = '';
+
+            quizData.forEach((item, idx) => {
+                const userAns = userAnswers[idx];
+                const isCorrect = userAns ? userAns.isCorrect : false;
+
+                const div = document.createElement('div');
+                div.className = `p-3 rounded-xl border text-left text-xs ${isCorrect ? 'bg-brand-sage border-brand-paleGreen' : 'bg-rose-50 border-rose-200'}`;
+                div.innerHTML = `
+                    <div class="flex items-center justify-between font-bold mb-1">
+                        <span class="text-slate-500">Q${idx + 1}. [${item.category}]</span>
+                        <span class="${isCorrect ? 'text-brand-deepGreen bg-brand-paleGreen' : 'text-rose-700 bg-rose-100'} px-2 py-0.5 rounded-full text-[10px] font-bold">
+                            ${isCorrect ? '정답 ⭕' : '오답 ❌'}
+                        </span>
+                    </div>
+                    <div class="font-bold text-slate-800 text-sm mb-1.5">${item.question}</div>
+                    <div class="text-slate-600 bg-white/90 p-2.5 rounded-lg border border-slate-100 space-y-0.5">
+                        <div class="font-bold text-brand-deepGreen">💡 정답: ${item.options[item.answer]}</div>
+                        <div class="text-slate-500 text-[11px] pt-0.5">${item.explanation}</div>
+                    </div>
+                `;
+                reviewList.appendChild(div);
+            });
+        }
+
+        // Hide Review Note
+        function hideReview() {
+            screenReview.classList.add('hidden');
+            screenReview.classList.remove('flex');
+            screenResult.classList.remove('hidden');
+            screenResult.classList.add('flex');
+        }
+    </script>
+</body>
+</html>
